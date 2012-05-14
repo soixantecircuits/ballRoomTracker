@@ -14,6 +14,7 @@ void testApp::setup(){
 
 	// open an outgoing connection to HOST:PORT
 	sender.setup( HOST, 12444 );
+  offset = 0;
 }
 
 //--------------------------------------------------------------
@@ -126,6 +127,7 @@ void testApp::lookForABounce(int pid){
 void testApp::bounceFound(sxBlob* blob){
   int stair = stairAtPosition(blob->centroid);
   if (stair >= 0){
+    stair += offset;
     sendBounce(stair, blob);
   }
 }
@@ -203,6 +205,14 @@ void testApp::keyPressed  (int key){
     for (unsigned int i = 0; i < blobs.size(); i++){
       blobs[i].erase(blobs[i].begin(), blobs[i].end());
     }
+  }
+  else if (key == '-'){
+    offset--;
+    cout << "offset = " << offset << endl; 
+  }
+  else if (key == '+'){
+    offset++;
+    cout << "offset = " << offset << endl; 
   }
   else if (key == 'a'){
     sendBounce(0);

@@ -7,7 +7,7 @@
 // listen on port 12345
 #define PORT 12345
 #define NUM_MSG_STRINGS 20
-#define HOST "localhost"
+#define HOST "192.168.1.102"//"localhost"
 
 class testApp : public ofBaseApp{
 	public:
@@ -41,4 +41,5 @@ class testApp : public ofBaseApp{
 
     vector< vector<sxBlob*> > blobs;
     vector< ofPoint*> stairs;
+    int offset;
 };
