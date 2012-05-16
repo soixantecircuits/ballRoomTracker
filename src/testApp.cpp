@@ -57,7 +57,7 @@ void testApp::update(){
 		else if ( m.getAddress() == "/TSPS/personUpdated/" )
 		{
       unsigned int pid = (unsigned int)m.getArgAsInt32(0);
-      if (pid > blobs.size()){
+      if(pid > blobs.size()){
         blobs.resize(2 * pid);
       }
       sxBlob *blob = new sxBlob();
@@ -74,6 +74,11 @@ void testApp::update(){
       blob->boundingRect.height = m.getArgAsFloat(10);
       blob->opticalFlowVectorAccumulation.x = m.getArgAsFloat(11);
       blob->opticalFlowVectorAccumulation.y = m.getArgAsFloat(12);
+      //manuel corrections
+      blob->centroid.x = blob->boundingRect.x + blob->boundingRect.width/2;
+      blob->centroid.y = blob->boundingRect.y + blob->boundingRect.height/2;
+      blob->timestamp = ofGetElapsedTimeMillis();
+
       blobs[pid].push_back(blob);
       lookForABounce(pid);
 		}
@@ -113,14 +118,23 @@ void testApp::update(){
 void testApp::lookForABounce(int pid){
     int j = blobs[pid].size()-1;
     if (j < 1){
+      blobs[pid][j]->velocity.x = 0;
+      blobs[pid][j]->velocity.y = 0;
       return ;
     }
+    blobs[pid][j]->velocity = blobs[pid][j]->centroid - blobs[pid][j-1]->centroid;
     // TODO: improve...
-    if (blobs[pid][j-1]->opticalFlowVectorAccumulation.y > 0
-            && blobs[pid][j]->opticalFlowVectorAccumulation.y < 0){
+    if (blobs[pid][j-1]->velocity.y > 0
+            && blobs[pid][j]->velocity.y < 0){
       // it's a bounce
-      bounceFound(blobs[pid][j]);
+      blobs[pid][j-1]->bounce = true;
+      bounceFound(blobs[pid][j-1]);
     }
+
+    ofxOscMessage m;
+    m.setAddress("/graph/value/");
+    m.addIntArg(blobs[pid][j]->velocity.y);
+    sender.sendMessage(m);
 }
 
 //--------------------------------------------------------------
@@ -179,10 +193,14 @@ void testApp::draw(){
     for (unsigned int j = 1; j < blobs[i].size(); j++){
       //ofEllipse(blobs[i][j]->centroid.x*ofGetWidth(), blobs[i][j]->centroid.y*ofGetHeight(), 10, 10);
       ofLine(blobs[i][j]->centroid.x*ofGetWidth(), blobs[i][j]->centroid.y*ofGetHeight(), blobs[i][j-1]->centroid.x*ofGetWidth(), blobs[i][j-1]->centroid.y*ofGetHeight());
-      if (blobs[i][j-1]->opticalFlowVectorAccumulation.y > 0
-            && blobs[i][j]->opticalFlowVectorAccumulation.y < 0){
+      if (blobs[i][j]->bounce){
         ofEllipse(blobs[i][j]->centroid.x*ofGetWidth(), blobs[i][j]->centroid.y*ofGetHeight(), 10, 10);
       }
+      if (j == blobs[i].size() - 1 && ofGetElapsedTimeMillis() - blobs[i][j]->timestamp < 1000){
+        ofSetHexColor(0xFFFFFF);
+        ofEllipse(blobs[i][j]->centroid.x*ofGetWidth(), blobs[i][j]->centroid.y*ofGetHeight(), 10, 10);
+      }
+
     }
   }
 

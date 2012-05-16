@@ -7,7 +7,8 @@
 // listen on port 12345
 #define PORT 12345
 #define NUM_MSG_STRINGS 20
-#define HOST "192.168.1.102"//"localhost"
+//#define HOST "192.168.1.102"//"localhost"
+#define HOST "localhost"
 
 class testApp : public ofBaseApp{
 	public:

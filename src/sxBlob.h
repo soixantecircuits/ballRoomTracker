@@ -11,4 +11,6 @@ class sxBlob{
     ofVec2f velocity;
     ofRectangle boundingRect;
     ofVec2f opticalFlowVectorAccumulation;
+    int timestamp;
+    bool bounce;
 };
